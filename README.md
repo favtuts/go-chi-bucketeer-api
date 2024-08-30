@@ -41,3 +41,59 @@ In the project directory, create the needed folders and files to match the layou
 ├── main.go
 └── README.md
 ```
+
+# Decomposing services with docker-compose
+
+Let us set up the Dockerfile to build the API server into a single binary file, expose the server port, and execute the binary on startup.
+
+```Dockerfile
+FROM golang:1.18.3-alpine3.16 as builder
+
+COPY go.mod go.sum /go/src/github.com/favtuts/go-chi-bucketeer-api/
+WORKDIR /go/src/github.com/favtuts/go-chi-bucketeer-api
+RUN go mod download
+COPY . /go/src/github.com/favtuts/go-chi-bucketeer-api
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o build/bucketeer github.com/favtuts/go-chi-bucketeer-api
+
+FROM alpine
+RUN apk add --no-cache ca-certificates && update-ca-certificates
+COPY --from=builder /go/src/github.com/favtuts/go-chi-bucketeer-api/build/bucketeer /usr/bin/bucketeer
+EXPOSE 8080 8080
+ENTRYPOINT ["/usr/bin/bucketeer"]
+```
+
+Next, open the `docker-compose.yml` file and declare the server and database services:
+```yml
+version: "3.7"
+services:
+  database:
+    image: postgres
+    restart: always
+    env_file:
+      - .env
+    ports:
+      - "5432:5432"
+    volumes:
+      - data:/var/lib/postgresql/data
+  server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    env_file: 
+      - .env
+    depends_on:
+      - database
+    networks:
+      - default
+    ports:
+    - "8080:8080"
+volumes:
+  data:
+```
+
+Also, populate the `.env` file with your app-specific credentials like this:
+```ini
+POSTGRES_USER=bucketeer
+POSTGRES_PASSWORD=bucketeer_pass
+POSTGRES_DB=bucketeer_db
+```
