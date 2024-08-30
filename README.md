@@ -97,3 +97,73 @@ POSTGRES_USER=bucketeer
 POSTGRES_PASSWORD=bucketeer_pass
 POSTGRES_DB=bucketeer_db
 ```
+
+
+# Setting up the database
+
+We will be using [golang-migrate](https://github.com/golang-migrate/migrate) to manage our database migrations.
+
+Follow the [installation document](https://github.com/golang-migrate/migrate/tree/master/cmd/migrate) to Install the migrate binary. Or follow the article: [How to Install Golang Migrate on Ubuntu](https://www.geeksforgeeks.org/how-to-install-golang-migrate-on-ubuntu/)
+
+
+Let us setup the repository to install the migrate package.
+```bash
+$ curl -s https://packagecloud.io/install/repositories/golang-migrate/migrate/script.deb.sh | sudo bash
+
+Detected operating system as Ubuntu/jammy.
+Checking for curl...
+Detected curl...
+Checking for gpg...
+Detected gpg...
+Detected apt version as 2.4.12
+Running apt-get update... done.
+Installing apt-transport-https... done.
+Installing /etc/apt/sources.list.d/golang-migrate_migrate.list...done.
+Importing packagecloud gpg key... Packagecloud gpg key imported to /etc/apt/keyrings/golang-migrate_migrate-archive-keyring.gpg
+done.
+Running apt-get update... done.
+
+The repository is setup! You can now install packages.
+```
+
+Update the system by executing the following command.
+```bash
+$ sudo apt-get update
+```
+
+Now, it’s time to set up golang migrate. Execute the following command in the terminal to install migrate.
+```bash
+sudo apt-get install migrate
+```
+
+Now you can use golang migrate to perform database migrations. Check by running:
+```bash
+$ migrate -version
+4.17.1
+```
+
+Generate the database migrations by running:
+```bash
+$ migrate create -ext sql -dir db/migrations -seq create_items_table
+```
+
+The command creates two SQL files in the `db/migrations` folder. The `XXXXXX_create_items_table.up.sql` file is executed when we run our migrations. Open it and add the SQL code to create a new table:
+```sql
+CREATE TABLE IF NOT EXISTS items(
+id SERIAL PRIMARY KEY,
+name VARCHAR(100) NOT NULL,
+description TEXT,
+created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+Conversely, the `XXXXXX_create_items_table.down.sql` file is executed when we roll back the migration. In this case, we simply want to drop the table during rollback, so add this code block to it:
+```sql
+DROP TABLE IF EXISTS items;
+```
+
+We can now apply our migrations with `migrate` by passing in the database connection and the folder that contains our migration files as command-line arguments. The command below does that by creating a bash environment variable using the same credentials declared in the `.env` file:
+```bash
+$ export POSTGRESQL_URL="postgres://bucketeer:bucketeer_pass@localhost:5432/bucketeer_db?sslmode=disable"
+$ migrate -database ${POSTGRESQL_URL} -path db/migrations up
+```
