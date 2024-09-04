@@ -654,3 +654,13 @@ Fetch a single item using its ID:
 ```bash
 $ curl http://localhost:8080/items/8
 ```
+
+# Development
+
+After making your changes, you can rebuild the server service by running the commands below
+```bash
+$ docker-compose stop server
+$ docker-compose build server
+$ docker-compose up --no-start server
+$ docker-compose start server
+```
