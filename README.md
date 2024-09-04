@@ -655,7 +655,7 @@ Fetch a single item using its ID:
 $ curl http://localhost:8080/items/8
 ```
 
-# Development
+# Development and Debuging
 
 After making your changes, you can rebuild the server service by running the commands below
 ```bash
@@ -663,4 +663,44 @@ $ docker-compose stop server
 $ docker-compose build server
 $ docker-compose up --no-start server
 $ docker-compose start server
+```
+
+To start or stop only database
+```bash
+$ docker-compose stop database
+$ docker-compose build database
+$ docker-compose up --no-start database
+$ docker-compose start database
+```
+
+For more information on [how to debug Go with VS Code](https://github.com/favtuts/golang-tutorial-beginners/tree/main/go-debugging).
+
+Install the DLV if not available
+```bash
+$ go install github.com/go-delve/delve/cmd/dlv@latest
+```
+
+We need to load environment variables from `.env` file by using [gotenv](https://github.com/joho/godotenv) package
+```bash
+$ go get github.com/joho/godotenv
+```
+
+In case of debugging the `.env` should be:
+```ini
+DEBUGGING=true
+POSTGRES_USER=bucketeer
+POSTGRES_PASSWORD=bucketeer_pass
+POSTGRES_DB=bucketeer_db
+POSTGRES_HOST=localhost
+POSTGRES_PORT=5432
+```
+
+In case of running docker the `.env` should be:
+```ini
+DEBUGGING=false
+POSTGRES_USER=bucketeer
+POSTGRES_PASSWORD=bucketeer_pass
+POSTGRES_DB=bucketeer_db
+POSTGRES_HOST=database
+POSTGRES_PORT=5432
 ```

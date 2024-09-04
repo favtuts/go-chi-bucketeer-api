@@ -3,6 +3,7 @@ package handler
 import (
 	"context"
 	"fmt"
+	"log"
 	"net/http"
 	"strconv"
 
@@ -42,6 +43,7 @@ func ItemContext(next http.Handler) http.Handler {
 }
 
 func createItem(w http.ResponseWriter, r *http.Request) {
+	log.Printf("Adding new item...")
 	item := &models.Item{}
 	if err := render.Bind(r, item); err != nil {
 		render.Render(w, r, ErrBadRequest)
@@ -58,6 +60,7 @@ func createItem(w http.ResponseWriter, r *http.Request) {
 }
 
 func getAllItems(w http.ResponseWriter, r *http.Request) {
+	log.Printf("Fetching all items...")
 	items, err := dbInstance.GetAllItems()
 	if err != nil {
 		render.Render(w, r, ServerErrorRenderer(err))
@@ -69,6 +72,7 @@ func getAllItems(w http.ResponseWriter, r *http.Request) {
 }
 
 func getItem(w http.ResponseWriter, r *http.Request) {
+	log.Printf("Fetching single item...")
 	itemID := r.Context().Value(itemIDKey).(int)
 	item, err := dbInstance.GetItemById(itemID)
 	if err != nil {

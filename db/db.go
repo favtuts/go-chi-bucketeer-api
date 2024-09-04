@@ -20,10 +20,10 @@ type Database struct {
 	Conn *sql.DB
 }
 
-func Initialize(username, password, database string) (Database, error) {
+func Initialize(username, password, database, host string, port int) (Database, error) {
 	db := Database{}
 	dsn := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
-		HOST, PORT, username, password, database)
+		host, port, username, password, database)
 	conn, err := sql.Open("postgres", dsn)
 	if err != nil {
 		return db, err

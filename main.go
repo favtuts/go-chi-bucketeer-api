@@ -8,11 +8,13 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strconv"
 	"syscall"
 	"time"
 
 	"github.com/favtuts/go-chi-bucketeer-api/db"
 	"github.com/favtuts/go-chi-bucketeer-api/handler"
+	"github.com/joho/godotenv"
 )
 
 func main() {
@@ -21,11 +23,25 @@ func main() {
 	if err != nil {
 		log.Fatalf("Error occurred: %s", err.Error())
 	}
-	dbUser, dbPassword, dbName :=
+
+	if os.Getenv("DEBUGGING") == "" {
+		// load env vars from file .env
+		err := godotenv.Load()
+		if err != nil {
+			log.Fatal("Error loading .env file")
+			return
+		}
+	}
+
+	dbUser, dbPassword, dbName, dbHost, dbPort :=
 		os.Getenv("POSTGRES_USER"),
 		os.Getenv("POSTGRES_PASSWORD"),
-		os.Getenv("POSTGRES_DB")
-	database, err := db.Initialize(dbUser, dbPassword, dbName)
+		os.Getenv("POSTGRES_DB"),
+		os.Getenv("POSTGRES_HOST"),
+		os.Getenv("POSTGRES_PORT")
+
+	dbPortInt, err := strconv.Atoi(dbPort)
+	database, err := db.Initialize(dbUser, dbPassword, dbName, dbHost, dbPortInt)
 	if err != nil {
 		log.Fatalf("Could not set up database: %v", err)
 	}
